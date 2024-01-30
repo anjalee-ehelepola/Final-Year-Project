@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map with Boxes and Net Speed Overlay</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+    <style>
+        #map {
+            height: 600px;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .net-speed-overlay {
+            position: absolute;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+
+        #boxInfo {
+            margin-top: 20px;
+        }
+
+        .box-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: black;
+            font-weight: bold;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        #loading {
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="overlay"></div>
+    <p>select ISP</p>
+
+    <div id="boxInfo"></div>
+
+
+    <select id="ispSelector">
+        <option value="dialog">Dialog</option>
+        <option value="mobitel">Mobitel</option>
+        <option value="airtel">Airtel</option>
+        <option value="hutch">Hutch</option>
+    </select>
+
+    <button onclick="checkNetSpeed()">Submit</button>
+
+
+    <p id="result"></p>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw"></script>
+    <script>
+        // Declare boxNumber as a global variable
+        let boxNumber;
+
+        // Function to create the map with boxes
+        function createMap(longitude, latitude) {
+            const map = L.map('map').setView([latitude, longitude], 12);
+
+            // Add the OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Create the Leaflet.draw control for drawing rectangles
+            const drawControl = new L.Control.Draw({
+                draw: {
+                    rectangle: true,
+                    polygon: false,
+                    circle: false,
+                    marker: false,
+                    polyline: false,
+                },
+            });
+
+            map.addControl(drawControl);
+
+            // Create an overlay div for displaying net speed
+            const boxInfo = document.getElementById('boxInfo');
+
+            // Calculate the position of the correct box
+            const xIndex = Math.floor((longitude - 79.5) / (82 - 79.5) * 25);
+            const yIndex = Math.floor((latitude - 5.8) / (9.8 - 5.8) * 40);
+
+            // Draw the boxes on the map
+            for (let i = 0; i < 25; i++) {
+                for (let j = 0; j < 40; j++) {
+                    const rect = L.rectangle([
+                        [5.8 + (j * (9.8 - 5.8) / 40), 79.5 + (i * (82 - 79.5) / 25)],
+                        [5.8 + ((j + 1) * (9.8 - 5.8) / 40), 79.5 + ((i + 1) * (82 - 79.5) / 25)]
+                    ]);
+
+                    // Color the correct box green
+                    if (i === xIndex && j === yIndex) {
+                        rect.setStyle({ fillColor: 'green', fillOpacity: 0.5 });
+
+                        // Set the global boxNumber variable
+                        boxNumber = i + j * 25 + 1;
+                    }
+
+                    // Add box number on top of each box
+                    const boxNumberDiv = L.divIcon({ className: 'box-number', html: `${i + j * 25 + 1}` });
+                    L.marker(rect.getBounds().getCenter(), { icon: boxNumberDiv }).addTo(map);
+
+                    rect.addTo(map);
+                }
+            }
+        }
+
+        // Function to get user's location
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Function to show user's position
+        function showPosition(position) {
+            const longitude = position.coords.longitude;
+            const latitude = position.coords.latitude;
+
+            // Create the map with boxes
+            createMap(longitude, latitude);
+        }
+
+        // Call the function to get location when the page loads
+        getLocation();
+    </script>
+
+    <script>
+        // Function to ask for net speed, display it, and send the data to the server
+        function checkNetSpeed() {
+            var netSpeed = prompt("Please enter your net speed (in Mbps):");
+            var resultElement = document.getElementById('result');
+            var selectedOption = document.getElementById('ispSelector').value;
+
+            if (netSpeed !== null) {
+                resultElement.textContent = "Data Submitted";
+
+                // Fetch the existing data from the server
+                fetch('https://aeproject-98547-default-rtdb.firebaseio.com/' + selectedOption + '.json')
+                    .then(response => response.json())
+                    .then(existingData => {
+                        // Update the specific key or add a new entry
+                        existingData[boxNumber] = parseFloat(netSpeed);
+
+                        // Send the updated data back to the server using PUT
+                        fetch('https://aeproject-98547-default-rtdb.firebaseio.com/' + selectedOption + '.json', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(existingData),
+                        })
+                            .then(response => response.json())
+                            .then(data => console.log(data))
+                            .catch(error => console.error('Error:', error));
+                    })
+                    .catch(error => console.error('Error fetching existing data:', error));
+            } else {
+                // Update the content of the #result element if the operation is canceled
+                resultElement.textContent = "You canceled the operation.";
+            }
+        }
+    </script>
+</body>
+
+</html>

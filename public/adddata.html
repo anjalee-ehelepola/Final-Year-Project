@@ -183,14 +183,14 @@
                 resultElement.textContent = "Data Submitted";
 
                 // Fetch the existing data from the server
-                fetch('https://aeproject-98547-default-rtdb.firebaseio.com/' + selectedOption + '.json')
+                fetch('https://fyp-project-64163-default-rtdb.firebaseio.com/' + selectedOption + '.json')
                     .then(response => response.json())
                     .then(existingData => {
                         // Update the specific key or add a new entry
                         existingData[boxNumber] = parseFloat(netSpeed);
 
                         // Send the updated data back to the server using PUT
-                        fetch('https://aeproject-98547-default-rtdb.firebaseio.com/' + selectedOption + '.json', {
+                        fetch('https://fyp-project-64163-default-rtdb.firebaseio.com/' + selectedOption + '.json', {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',

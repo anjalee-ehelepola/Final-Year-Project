@@ -187,7 +187,7 @@
 
         function getApiData() {
             if (boxNumber) {
-                const apiUrl = `https://aeproject-98547-default-rtdb.firebaseio.com/dialog/${boxNumber}.json`;
+                const apiUrl = `https://fyp-project-64163-default-rtdb.firebaseio.com/dialog/${boxNumber}.json`;
                 fetch(apiUrl)
                     .then(response => response.json())
                     .then(data => {
@@ -196,9 +196,9 @@
 
                         // Make other API calls
                         return Promise.all([
-                            fetch(`https://aeproject-98547-default-rtdb.firebaseio.com/mobitel/${boxNumber}.json`),
-                            fetch(`https://aeproject-98547-default-rtdb.firebaseio.com/hutch/${boxNumber}.json`),
-                            fetch(`https://aeproject-98547-default-rtdb.firebaseio.com/airtel/${boxNumber}.json`)
+                            fetch(`https://fyp-project-64163-default-rtdb.firebaseio.com/mobitel/${boxNumber}.json`),
+                            fetch(`https://fyp-project-64163-default-rtdb.firebaseio.com/hutch/${boxNumber}.json`),
+                            fetch(`https://fyp-project-64163-default-rtdb.firebaseio.com/airtel/${boxNumber}.json`)
                         ]);
                     })
                     .then(responses => Promise.all(responses.map(response => response.json())))

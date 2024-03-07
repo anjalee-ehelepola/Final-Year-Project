@@ -8,8 +8,33 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
     <style>
+        #mapAndSpeedContainer {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #speedboxAndISPBox {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, 0%);
+        }
+
         #map {
             height: 600px;
+            margin-left: 1%;
+            width: 47.5%;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .pos {
+            width: 47.5%;
+            margin-right: 1%;
+            padding: 5px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         #overlay {
@@ -71,25 +96,29 @@
 </head>
 
 <body>
-    <div id="map"></div>
+    <div id="mapAndSpeedContainer">
+        <div id="map"></div>
+        <div class="pos">
+            <iframe src="https://openspeedtest.com/Get-widget.php" width="735" scrolling="no" height="490"
+                frameborder="0"></iframe><br />
+            <div style="text-align:center; width: 725px;"></div>
+        </div>
+    </div>
     <div id="overlay"></div>
-    <p>select ISP</p>
-
-    <div id="boxInfo"></div>
-
-
-    <select id="ispSelector">
-        <option value="dialog">Dialog</option>
-        <option value="mobitel">Mobitel</option>
-        <option value="airtel">Airtel</option>
-        <option value="hutch">Hutch</option>
-    </select>
-
-    <button onclick="checkNetSpeed()">Submit</button>
-
-
-    <p id="result"></p>
-
+    <div id="speedboxAndISPBox">
+        <p style="text-align:center">Allow location -> Start Speedtest -> Input Data</p>
+        <div id="boxInfo"></div>
+        <select id="ispSelector">
+            <option value="" disabled selected>Select your ISP</option>
+            <option value="dialog">Dialog</option>
+            <option value="mobitel">Mobitel</option>
+            <option value="airtel">Airtel</option>
+            <option value="hutch">Hutch</option>
+        </select>
+        <input type="number" id="netSpeedInput" placeholder="Enter your download speed">
+        <button onclick="checkNetSpeed()">Submit</button>
+        <p style="text-align:center" id="result"></p>
+    </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw"></script>
     <script>
@@ -171,15 +200,15 @@
         // Call the function to get location when the page loads
         getLocation();
     </script>
-
     <script>
         // Function to ask for net speed, display it, and send the data to the server
         function checkNetSpeed() {
-            var netSpeed = prompt("Please enter your net speed (in Mbps):");
+            // Get the value from the input box
+            var netSpeed = document.getElementById('netSpeedInput').value;
             var resultElement = document.getElementById('result');
             var selectedOption = document.getElementById('ispSelector').value;
 
-            if (netSpeed !== null) {
+            if (netSpeed !== "") {
                 resultElement.textContent = "Data Submitted";
 
                 // Fetch the existing data from the server
@@ -204,7 +233,7 @@
                     .catch(error => console.error('Error fetching existing data:', error));
             } else {
                 // Update the content of the #result element if the operation is canceled
-                resultElement.textContent = "You canceled the operation.";
+                resultElement.textContent = "Please enter your net speed.";
             }
         }
     </script>

@@ -8,33 +8,122 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
     <style>
+
+        html, body{
+    
+            background-image: url('image4.jpg'); 
+            background-size: cover;
+            background-position: center;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+}
+        
+
         #mapAndSpeedContainer {
             display: flex;
             justify-content: space-between;
+            background-size: cover;
+            background-position: center;
+            height: 600px;
+            width: 100%;
+            margin-bottom: 60px;
         }
 
         #speedboxAndISPBox {
+            text-align: center;
             position: absolute;
-            left: 50%;
-            transform: translate(-50%, 0%);
+            left: 72%;
+            bottom: 22%;
+            transform: translate(-50%, 50%);
+            height: 50px;
+            width: 700px;
+            border-radius:30px;
+            color: white; /* Changed font color to white */
+
         }
+
+        /*.center-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        
+        }*/
 
         #map {
             height: 600px;
-            margin-left: 1%;
+            margin-left: 3%;
             width: 47.5%;
             border: 2px solid #3498db;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
+        select#ispSelector{
+            width: 200px; /* Adjust the width as needed */
+            padding: 15px 32px; /* Adjust the padding as needed */
+            margin: 5px; 
+            margin-right: 5px;
+            background-color: #000080; /* Change background color */
+            color: #ffffff; /* Change font color */
+            border: 2px solid #f8f5f5;; /* Change border color */
+            border-radius: 10px;
+            text-align-last: center;
+            -moz-appearance: none; /* Firefox */
+            -webkit-appearance: none; /* Safari and Chrome */
+            appearance: none;
+            font-size: 15px;
+        }
+
+        input#netSpeedInput {
+            width: 200px; /* Adjust the width as needed */
+            padding: 15px 32px; /* Adjust the padding as needed */
+            margin: 5px; /* Adjust the margin as needed */
+            background-color: #000080; /* Change background color */
+            color: white; /* Change font color */
+            border: 2px solid #f8f5f5; 
+            border-radius: 10px;
+            text-align: center;
+            font-size:15px;
+        }
+
+        input#netSpeedInput::placeholder {
+            color: white !important; /* Change placeholder text color to white */
+        }
+
+        button {
+            background-color: #000080; /* Green */
+            border: 2px solid white;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 15px;
+            margin: 4px 2px;
+            margin-left: 5px;
+            cursor: pointer;
+            border-radius: 10px;
+}
+
+        button:hover {
+            background-image: url('image4.jpg'); 
+}
+
         .pos {
-            width: 47.5%;
-            margin-right: 1%;
+            width: 50%;
+            margin-right: 3%;
+            margin-left: 20px;
             padding: 5px;
             border: 2px solid #3498db;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        itframe{
+            width: 100%;
+            height: 100%;
         }
 
         #overlay {
@@ -92,6 +181,7 @@
                 transform: rotate(360deg);
             }
         }
+
     </style>
 </head>
 
@@ -99,17 +189,16 @@
     <div id="mapAndSpeedContainer">
         <div id="map"></div>
         <div class="pos">
-            <iframe src="https://openspeedtest.com/Get-widget.php" width="735" scrolling="no" height="490"
+            <iframe src="https://openspeedtest.com/Get-widget.php" width="100%" height="100%" scrolling="no"
                 frameborder="0"></iframe><br />
             <div style="text-align:center; width: 725px;"></div>
         </div>
     </div>
     <div id="overlay"></div>
     <div id="speedboxAndISPBox">
-        <p style="text-align:center">Allow location -> Start Speedtest -> Input Data</p>
         <div id="boxInfo"></div>
         <select id="ispSelector">
-            <option value="" disabled selected>Select your ISP</option>
+            <option value="Select your ISP">Select your ISP</option>
             <option value="dialog">Dialog</option>
             <option value="mobitel">Mobitel</option>
             <option value="airtel">Airtel</option>
@@ -119,6 +208,10 @@
         <button onclick="checkNetSpeed()">Submit</button>
         <p style="text-align:center" id="result"></p>
     </div>
+    <div id="popup" style="display: none;">
+        <p>Data submitted successfully!</p>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw"></script>
     <script>
@@ -209,6 +302,11 @@
             var selectedOption = document.getElementById('ispSelector').value;
 
             if (netSpeed !== "") {
+                var popup = document.getElementById('popup');
+                popup.style.display = 'block';
+                setTimeout(function() {
+                popup.style.display = 'none';
+                }, 2000);
                 resultElement.textContent = "Data Submitted";
 
                 // Fetch the existing data from the server

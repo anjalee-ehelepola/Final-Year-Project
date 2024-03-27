@@ -1,222 +1,417 @@
 <!DOCTYPE html>
 <html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Map with Boxes and Net Speed Overlay</title>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+      <style>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map with Boxes and Net Speed Overlay</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
-    <style>
-        #map {
-            height: 600px;
-            width: 98%;
-            margin-left: 1%;
-            margin-top: 2%;
-            border: 2px solid #3498db;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-
-        #overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
+        html, body{
+            background-image: url('image4.jpg'); 
+            background-size: cover;
+            background-position: center;
             height: 100%;
-            pointer-events: none;
-        }
-
-        .net-speed-overlay {
-            position: absolute;
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 5px;
-            border-radius: 5px;
-            pointer-events: none;
-        }
-
-        #boxInfo {
-            margin-top: 20px;
-        }
-
-        .box-number {
-            padding-left: 15px;
-            padding-top: 10px;
-            color: rgba(0, 0, 0, 0.6);
-            font-weight: bold;
-            font-size: 20px;
-            pointer-events: none;
-        }
-    </style>
-</head>
-
-<body>
-    <div id="map"></div>
-    <div id="overlay"></div>
-    <div id="boxInfo"></div>
-
-    <p id="apiResults"></p>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-draw"></script>
-    <script>
-        // Declare boxNumber as a global variable
-        let boxNumber;
-        let highlightedRectangle;
-        let initialBoxNumber;
-
-        // Function to create the map with boxes
-        function createMap(longitude, latitude) {
-            const map = L.map('map').setView([latitude, longitude], 12);
-
-            // Add the OpenStreetMap tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Create the Leaflet.draw control for drawing rectangles
-            const drawControl = new L.Control.Draw({
-                draw: {
-                    rectangle: true,
-                    polygon: false,
-                    circle: false,
-                    marker: false,
-                    polyline: false,
-                },
-            });
-
-            map.addControl(drawControl);
-
-            // Create an overlay div for displaying net speed
-            const boxInfo = document.getElementById('boxInfo');
-
-            // Calculate the position of the correct box
-            const xIndex = Math.floor((longitude - 79.5) / (82 - 79.5) * 25);
-            const yIndex = Math.floor((latitude - 5.8) / (9.8 - 5.8) * 40);
-
-            // Draw the boxes on the map
-            for (let i = 0; i < 25; i++) {
-                for (let j = 0; j < 40; j++) {
-                    const rect = L.rectangle([
-                        [5.8 + (j * (9.8 - 5.8) / 40), 79.5 + (i * (82 - 79.5) / 25)],
-                        [5.8 + ((j + 1) * (9.8 - 5.8) / 40), 79.5 + ((i + 1) * (82 - 79.5) / 25)]
-                    ]);
-
-                    // Color the correct box green
-                    if (i === xIndex && j === yIndex) {
-                        rect.setStyle({ fillColor: 'green', fillOpacity: 0.5 });
-                        // Set the global boxNumber variable
-                        boxNumber = i + j * 25 + 1;
-                        // Store the initial box number in a variable
-                        initialBoxNumber = boxNumber;
-                    }
-
-
-
-                    // Add box number on top of each box
-                    const boxNumberDiv = L.divIcon({ className: 'box-number', html: `${i + j * 25 + 1}` });
-
-                    // Adjust the iconAnchor to position the marker based on the top-left corner
-                    L.marker(rect.getBounds().getNorthWest(), { icon: boxNumberDiv, iconAnchor: [0, 0] }).addTo(map);
-
-                    rect.addTo(map);
-
-                    // Add click event listener to each rectangle
-                    rect.on('click', function () {
-                        // Reset all rectangles to normal state (not green)
-                        resetRectangles();
-
-                        // Set the global boxNumber variable
-                        boxNumber = i + j * 25 + 1;
-
-                        // Set the new highlight
-
-                        if (boxNumber == initialBoxNumber) {
-                            rect.setStyle({ fillColor: 'green', fillOpacity: 0.5 });
-                            // highlightedRectangle = rect;
-                        } else {
-                            rect.setStyle({ fillColor: 'yellow', fillOpacity: 0.5 });
-                            highlightedRectangle = rect;
-                        }
-
-
-                        // Print the new box number in the console
-                        console.log(`Clicked on Box ${boxNumber}`);
-
-                        // Call the function to get API data for the clicked box
-                        getApiData();
-                    });
-
-
-                }
-
+            margin: 0;
+            padding: 0;
             }
 
-            console.log(`Initial Box Number: ${initialBoxNumber}`);
+         #map {
+         height: 600px;
+         width: 98%;
+         margin-left: 1%;
+         margin-top: 2%;
+         border: 2px solid #3498db;
+         border-radius: 10px;
+         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+         }
+         #overlay {
+         position: absolute;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         pointer-events: none;
+         }
+         .net-speed-overlay {
+         position: absolute;
+         text-align: center;
+         background-color: rgba(255, 255, 255, 0.7);
+         padding: 5px;
+         border-radius: 5px;
+         pointer-events: none;
+         }
+         #boxInfo {
+         margin-top: 20px;
+         }
+         #guagesDiv {
+        display: flex;
+        justify-content: center;
         }
-
-
-        function resetRectangles() {
-            if (highlightedRectangle) {
-                highlightedRectangle.setStyle({ fillColor: '#3388ff', fillOpacity: 0.2 });
-                highlightedRectangle = null;
-            }
+        #chart,#chart1,#chart2,#chart3 {
+            background-color: ghostwhite;
         }
+        
+         .box-number {
+         padding-left: 15px;
+         padding-top: 10px;
+         color: rgba(0, 0, 0, 0.6);
+         font-weight: bold;
+         font-size: 20px;
+         pointer-events: none;
+         }
+  
+      </style>
+   </head>
+   <body>
+      <div id="map"></div>
+      <div id="overlay"></div>
+      <div id="boxInfo"></div>
 
-        // Function to get user's location
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition);
-            } else {
-                alert("Geolocation is not supported by this browser.");
-            }
-        }
+      <div id="guagesDiv">
+        <div class="canvas-holder" style="width: 20%; float: left;">
+            <canvas id="chart"></canvas>
+         </div>
+    
+         <div class="canvas-holder" style="width:20%; float: left;">
+            <canvas id="chart1"></canvas>
+        </div>
+    
+        <div class="canvas-holder" style="width: 20%; float: left;">
+            <canvas id="chart2"></canvas>
+         </div>
+    
+         <div class="canvas-holder" style="width:20%; float: left;">
+            <canvas id="chart3"></canvas>
+        </div>
+      </div>
 
-        // Function to show user's position
-        function showPosition(position) {
+      
+      <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js"></script>
+      <script src="https://unpkg.com/chartjs-gauge@0.2.0/dist/chartjs-gauge.js"></script>
+      <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+      <script src="https://unpkg.com/leaflet-draw"></script>
+      <script>
+         // Declare variables
+         let boxNumber;
+         let highlightedRectangle;
+         let initialBoxNumber;
+         
+         // Function to create the map with boxes
+         function createMap(longitude, latitude) {
+             const map = L.map('map').setView([latitude, longitude], 12);
+         
+             // Add the OpenStreetMap tile layer
+             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                 attribution: '© OpenStreetMap contributors'
+             }).addTo(map);
+         
+             // Create the Leaflet.draw control for drawing rectangles
+             const drawControl = new L.Control.Draw({
+                 draw: {
+                     rectangle: true,
+                     polygon: false,
+                     circle: false,
+                     marker: false,
+                     polyline: false,
+                 },
+             });
+         
+             map.addControl(drawControl);
+         
+             // Create an overlay div for displaying net speed
+             const boxInfo = document.getElementById('boxInfo');
+         
+             // Calculate the position of the correct box
+             const xIndex = Math.floor((longitude - 79.5) / (82 - 79.5) * 25);
+             const yIndex = Math.floor((latitude - 5.8) / (9.8 - 5.8) * 40);
+         
+             // Draw the boxes on the map
+             for (let i = 0; i < 25; i++) {
+                 for (let j = 0; j < 40; j++) {
+                     const rect = L.rectangle([
+                         [5.8 + (j * (9.8 - 5.8) / 40), 79.5 + (i * (82 - 79.5) / 25)],
+                         [5.8 + ((j + 1) * (9.8 - 5.8) / 40), 79.5 + ((i + 1) * (82 - 79.5) / 25)]
+                     ]);
+         
+                     // Color the correct box green
+                     if (i === xIndex && j === yIndex) {
+                         rect.setStyle({ fillColor: 'green', fillOpacity: 0.5 });
+                         // Set the global boxNumber variable
+                         boxNumber = i + j * 25 + 1;
+                         // Store the initial box number in a variable
+                         initialBoxNumber = boxNumber;
+                     }
+         
+         
+         
+                     // Add box number on top of each box
+                     const boxNumberDiv = L.divIcon({ className: 'box-number', html: `${i + j * 25 + 1}` });
+         
+                     // Adjust the iconAnchor to position the marker based on the top-left corner
+                     L.marker(rect.getBounds().getNorthWest(), { icon: boxNumberDiv, iconAnchor: [0, 0] }).addTo(map);
+         
+                     rect.addTo(map);
+         
+                     // Add click event listener to each rectangle
+                     rect.on('click', function () {
+                         // Reset all rectangles to normal state (not green)
+                         resetRectangles();
+         
+                         // Set the global boxNumber variable
+                         boxNumber = i + j * 25 + 1;
+         
+                         // Set the new highlight
+         
+                         if (boxNumber == initialBoxNumber) {
+                             rect.setStyle({ fillColor: 'green', fillOpacity: 0.5 });
+                             // highlightedRectangle = rect;
+                         } else {
+                             rect.setStyle({ fillColor: 'yellow', fillOpacity: 0.5 });
+                             highlightedRectangle = rect;
+                         }
+         
+         
+    
+         
+                         // Call the function to get API data for the clicked box
+                         getApiData();
+                         
+                     });
+         
+         
+                 }
+         
+             }
+         
+         }
+         
+         
+         function resetRectangles() {
+             if (highlightedRectangle) {
+                 highlightedRectangle.setStyle({ fillColor: '#3388ff', fillOpacity: 0.2 });
+                 highlightedRectangle = null;
+             }
+         }
+         
+         // Function to get user's location
+         function getLocation() {
+             if (navigator.geolocation) {
+                 navigator.geolocation.getCurrentPosition(showPosition);
+             } else {
+                 alert("Geolocation is not supported by this browser.");
+             }
+         }
+         
+         // Function to show user's position
+         function showPosition(position) {
+            
             const longitude = position.coords.longitude;
-            const latitude = position.coords.latitude;
-
-            // Create the map with boxes
-            createMap(longitude, latitude);
-
-            getApiData();
-        }
-
-        function getApiData() {
-            if (boxNumber) {
-                const apiUrl = `https://fyp-project-64163-default-rtdb.firebaseio.com//dialog/${boxNumber}.json`;
-                fetch(apiUrl)
-                    .then(response => response.json())
+             const latitude = position.coords.latitude;
+         
+             // Create the map with boxes
+             createMap(longitude, latitude);
+         
+             var kd = getApiData();
+             console.log(`Initial Box Number:` + kd);
+         }
+         
+         function getApiData() {
+            return new Promise((resolve, reject) => {
+                if (boxNumber) {
+                    const apiUrlDialog = `https://fyp-project-64163-default-rtdb.firebaseio.com/dialog/${boxNumber}.json`;
+                    const apiUrlMobitel = `https://fyp-project-64163-default-rtdb.firebaseio.com/mobitel/${boxNumber}.json`;
+                    const apiUrlHutch = `https://fyp-project-64163-default-rtdb.firebaseio.com/hutch/${boxNumber}.json`;
+                    const apiUrlAirtel = `https://fyp-project-64163-default-rtdb.firebaseio.com/airtel/${boxNumber}.json`;
+    
+                    Promise.all([
+                        fetch(apiUrlDialog).then(response => response.json()),
+                        fetch(apiUrlMobitel).then(response => response.json()),
+                        fetch(apiUrlHutch).then(response => response.json()),
+                        fetch(apiUrlAirtel).then(response => response.json())
+                    ])
                     .then(data => {
-                        const apiResults = document.getElementById('apiResults');
-                        apiResults.innerText = `Dialog: ${data}\n`;
-
-                        // Make other API calls
-                        return Promise.all([
-                            fetch(`https://fyp-project-64163-default-rtdb.firebaseio.com/mobitel/${boxNumber}.json`),
-                            fetch(`https://fyp-project-64163-default-rtdb.firebaseio.com/hutch/${boxNumber}.json`),
-                            fetch(`https://fyp-project-64163-default-rtdb.firebaseio.com/airtel/${boxNumber}.json`)
-                        ]);
+                        const dialog = data[0];
+                        const mobitel = data[1];
+                        const hutch = data[2];
+                        const airtel = data[3];
+    
+                        // var maxspeedguage = 100 + 5; // Assuming this value remains constant
+                        var maxSpeedGauge = Math.max(dialog, mobitel, hutch, airtel) + 5;
+    
+                        var configDialog = {
+                            type: 'gauge',
+                            data: {
+                                datasets: [{
+                                    data: [dialog, maxSpeedGauge],
+                                    value: dialog,
+                                    backgroundColor: ['#91000e', '#EFEFEF'],
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                title: {
+                                    display: true,
+                                    text: 'Dialog'
+                                },
+                                layout: {
+                                    padding: {
+                                        bottom: 30
+                                    }
+                                },
+                                needle: {
+                                    radiusPercentage: 2,
+                                    widthPercentage: 3.2,
+                                    lengthPercentage: 80,
+                                    color: 'rgba(0, 0, 0, 1)'
+                                },
+                                valueLabel: {
+                                    formatter: function(value) {
+                                        return Math.round(value) + ' mbps';
+                                    }
+                                }
+                            }
+                        };
+    
+                        var configMobitel = {
+                            type: 'gauge',
+                            data: {
+                                datasets: [{
+                                    data: [mobitel, maxSpeedGauge],
+                                    value: mobitel,
+                                    backgroundColor: ['#39c45e', '#EFEFEF'],
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                title: {
+                                    display: true,
+                                    text: 'Mobitel'
+                                },
+                                layout: {
+                                    padding: {
+                                        bottom: 30
+                                    }
+                                },
+                                needle: {
+                                    radiusPercentage: 2,
+                                    widthPercentage: 3.2,
+                                    lengthPercentage: 80,
+                                    color: 'rgba(0, 0, 0, 1)'
+                                },
+                                valueLabel: {
+                                    formatter: function(value) {
+                                        return Math.round(value) + ' mbps';
+                                    }
+                                }
+                            }
+                        };
+    
+                        var configHutch = {
+                            type: 'gauge',
+                            data: {
+                                datasets: [{
+                                    data: [hutch, maxSpeedGauge],
+                                    value: hutch,
+                                    backgroundColor: ['#e08910', '#EFEFEF'],
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                title: {
+                                    display: true,
+                                    text: 'Hutch'
+                                },
+                                layout: {
+                                    padding: {
+                                        bottom: 30
+                                    }
+                                },
+                                needle: {
+                                    radiusPercentage: 2,
+                                    widthPercentage: 3.2,
+                                    lengthPercentage: 80,
+                                    color: 'rgba(0, 0, 0, 1)'
+                                },
+                                valueLabel: {
+                                    formatter: function(value) {
+                                        return Math.round(value) + ' mbps';
+                                    }
+                                }
+                            }
+                        };
+    
+                        var configAirtel = {
+                            type: 'gauge',
+                            data: {
+                                datasets: [{
+                                    data: [airtel, maxSpeedGauge],
+                                    value: airtel,
+                                    backgroundColor: ['#ff0019', '#EFEFEF'],
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                title: {
+                                    display: true,
+                                    text: 'Airtel'
+                                },
+                                layout: {
+                                    padding: {
+                                        bottom: 30
+                                    }
+                                },
+                                needle: {
+                                    radiusPercentage: 2,
+                                    widthPercentage: 3.2,
+                                    lengthPercentage: 80,
+                                    color: 'rgba(0, 0, 0, 1)'
+                                },
+                                valueLabel: {
+                                    formatter: function(value) {
+                                        return Math.round(value) + ' mbps';
+                                    }
+                                }
+                            }
+                        };
+    
+                        var ctx = document.getElementById('chart').getContext('2d');
+                        window.myGauge = new Chart(ctx, configDialog);
+                        
+                        var ctx1 = document.getElementById('chart1').getContext('2d');
+                        window.myGauge1 = new Chart(ctx1, configMobitel);
+                        
+                        var ctx2 = document.getElementById('chart2').getContext('2d');
+                        window.myGauge2 = new Chart(ctx2, configHutch);
+                        
+                        var ctx3 = document.getElementById('chart3').getContext('2d');
+                        window.myGauge3 = new Chart(ctx3, configAirtel);
+                        
+                        resolve({ dialog, mobitel, hutch, airtel });
                     })
-                    .then(responses => Promise.all(responses.map(response => response.json())))
-                    .then(data => {
-                        const apiResults = document.getElementById('apiResults');
-                        apiResults.innerText += `Mobitel: ${data[0]}\n`;
-                        apiResults.innerText += `Hutch: ${data[1]}\n`;
-                        apiResults.innerText += `Airtel: ${data[2]}\n`;
-                    })
-                    .catch(error => console.error('Error fetching API data:', error));
-            }
+                    .catch(error => reject(error));
+                } else {
+                    reject("Box number not provided");
+                }
+            });
         }
-
-
-        // Call the function to get location when the page loads
-        getLocation();
-    </script>
-
-</body>
-
+    
+        window.onload = function() {
+            getApiData().then(data => {
+            }).catch(error => {
+                console.error(error);
+            });
+        };
+    
+             
+             
+            getLocation();
+             
+        </script>
+   </body>
 </html>

@@ -4,13 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Button Page</title>
+    <style>
+
+        body{
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+            text-align: center;  
+            background-image: url('image4.jpg'); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+        
+        }
+
+        .parent-container {
+        text-align: center;
+        }
+
+        .container {
+            width: 50%;
+            margin: 50px auto;
+            padding: 20px;
+            /*background-image: url('image2.jpg');*/
+            /*background-color: #4848eb;*/
+           /* background-size: cover;*/
+            /*background-position: center;
+            background-repeat: no-repeat;*/
+            border-radius: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: inline-block;
+            
+        }
+
+        h1 {
+            color: #f3e2e2; 
+            transition: color 0.3s;
+            font-size: 40px;
+            
+            
+        }
+        
+
+        #share-network-speed {
+            background-color: #000080;
+            color: white;
+            border: 2px solid white;
+        }
+        #share-network-speed:hover {
+            background-image: url('image4.jpg'); 
+            color: rgb(243, 243, 253);
+            border: 2px solid white;
+        }
+
+        #view-network-speed { 
+            background-color: #000080;
+            color: white;
+            border: 2px solid white;
+        }
+        #view-network-speed:hover {
+            background-image: url('image4.jpg'); 
+            color: white;
+            border: 2px solid white;
+        }
+
+        
+        button {
+            padding: 15px 25px;
+            margin: 10px;
+            font-size: 20px;
+            border: none;
+            /*border: 2px solid #e6e6e9;
+            background-color: #110641;*/
+            color: #ffffff;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            -webkit-transition-duration: 0.4s; 
+            transition-duration: 0.4s;
+        }
+        #share-network-speed:hover,#view-network-speed:hover
+        button:hover {
+            background-color: #5c53e4;
+            border: 2px solid white;
+            color: white;
+}
+
+       /*.container img {
+            max-width: 50%;
+            height: 300px;
+            display: block;
+            margin: 0 auto 20px; 
+        }*/
+
+        
+
+    </style>
 </head>
 <body>
 
-    <h1>Welcome to the Button Page!</h1>
+    <div class="container">
+        <h1>Discover High-Speed Internet Providers Near You!</h1>
 
-    <button onclick="location.href='adddata.html'">Input Data</button>
-    <button onclick="location.href='getdata.html'">Receive Data</button>
-
+        <button id="share-network-speed" onclick="location.href='adddata.html'">Share Network Speed</button>
+        <button id="view-network-speed" onclick="location.href='getdata.html'">View Network Speed</button>
+    </div>
 </body>
 </html>

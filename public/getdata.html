@@ -49,9 +49,9 @@
         display: flex;
         justify-content: center;
         }
-        #chart,#chart1,#chart2,#chart3 {
-            background-color: ghostwhite;
-        }
+        #chart,#chart1,#chart2,#chart3 /*{
+            background-image: url('image4.jpg'); 
+        }*/
         
          .box-number {
          padding-left: 15px;
@@ -61,7 +61,7 @@
          font-size: 20px;
          pointer-events: none;
          }
-  
+
       </style>
    </head>
    <body>
@@ -246,7 +246,7 @@
                                 datasets: [{
                                     data: [dialog, maxSpeedGauge],
                                     value: dialog,
-                                    backgroundColor: ['#91000e', '#EFEFEF'],
+                                    backgroundColor: ['#8B008B', '#EFEFEF'],
                                     borderWidth: 2
                                 }]
                             },
@@ -254,7 +254,14 @@
                                 responsive: true,
                                 title: {
                                     display: true,
-                                    text: 'Dialog'
+                                    text: 'Dialog',
+                                    fontColor:'white'
+                                    
+                                
+                                
+                                    
+                                
+                            
                                 },
                                 layout: {
                                     padding: {
@@ -281,7 +288,7 @@
                                 datasets: [{
                                     data: [mobitel, maxSpeedGauge],
                                     value: mobitel,
-                                    backgroundColor: ['#39c45e', '#EFEFEF'],
+                                    backgroundColor: ['#32CD32', '#EFEFEF'],
                                     borderWidth: 2
                                 }]
                             },
@@ -289,7 +296,11 @@
                                 responsive: true,
                                 title: {
                                     display: true,
-                                    text: 'Mobitel'
+                                    text: 'Mobitel',
+                                    fontColor:'white'
+                                    
+                             
+                        
                                 },
                                 layout: {
                                     padding: {
@@ -324,7 +335,10 @@
                                 responsive: true,
                                 title: {
                                     display: true,
-                                    text: 'Hutch'
+                                    text: 'Hutch',
+                                    fontColor:'white'
+                                    
+                                
                                 },
                                 layout: {
                                     padding: {
@@ -359,7 +373,12 @@
                                 responsive: true,
                                 title: {
                                     display: true,
-                                    text: 'Airtel'
+                                    text: 'Airtel',
+                                    fontColor:'white'
+                                    
+                                   
+                                    
+        
                                 },
                                 layout: {
                                     padding: {
